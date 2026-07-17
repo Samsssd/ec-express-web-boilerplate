@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ec-express-web-boilerplate
 
-## Getting Started
+Boilerplate for **Excelsior Express** web builds. It is the baked starting
+point of every express-generated app: the express agent only generates the
+design layer (globals.css theme, landing page, header/footer shell) on top,
+and OpenCode edits the app live afterwards, guided by [AGENTS.md](AGENTS.md).
 
-First, run the development server:
+Pre-wired (deterministic, no secrets in the app):
+
+- **Auth** — Supabase cookie SSR (`@supabase/ssr`): `lib/supabase/{client,server}.ts`,
+  `middleware.ts`, `/auth` page + `app/actions/auth.ts` (signIn/signUp/signOut).
+- **Payments** — hosted Stripe Checkout through the platform proxy
+  (`lib/payments/checkout.ts`); the app never holds a Stripe key.
+- **Storage** — S3 presigned-ticket uploads through the platform proxy
+  (`lib/storage/*`, `app/actions/upload.ts`); no AWS credentials in the app.
+- **AI** — streaming chat through the platform proxy (`lib/ai/client.ts`,
+  `app/api/chat/route.ts`); alias-based models, no provider key.
+- **DB migrations** — `supabase/migrations/` workflow applied by the platform
+  (see AGENTS.md § Base de données).
+- **Design tokens** — `app/globals.css` token contract that the generated
+  design redefines and every pre-baked page inherits.
+
+Runtime env (injected by the platform as `.env.local`):
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+`NEXT_PUBLIC_APP_ID`, `PAYMENTS_API_URL/TOKEN`, `STORAGE_API_URL/TOKEN`,
+`AI_API_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

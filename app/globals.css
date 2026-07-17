@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
+/*
+ * DESIGN TOKEN CONTRACT — the names below are load-bearing.
+ * Pre-baked pages (/auth) and platform components style themselves ONLY with
+ * these variables, so a redesign = redefining their values here. When you
+ * restyle the app, KEEP every token name (change the values freely) and keep
+ * the @theme inline mapping so Tailwind utilities like bg-primary keep working.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdfcfa;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --muted: #f5f3f0;
+  --muted-foreground: #78716c;
+  --border: #e7e2dc;
+  --input: #e7e2dc;
+  --primary: #1c1917;
+  --primary-foreground: #fdfcfa;
+  --secondary: #f5f3f0;
+  --secondary-foreground: #1c1917;
+  --accent: #ea683c;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --ring: #ea683c;
+  --radius: 0.75rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
+  --radius-app: var(--radius);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
