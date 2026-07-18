@@ -15,8 +15,9 @@ import and use them:
 
 | File | Purpose |
 |---|---|
-| `lib/supabase/client.ts` / `lib/supabase/server.ts` | Supabase browser/server clients (cookie SSR) |
+| `lib/supabase/client.ts` / `lib/supabase/server.ts` / `lib/supabase/auth.ts` | Supabase browser/server clients and validated user helper (cookie SSR) |
 | `middleware.ts` | Session refresh — never touch |
+| `app/template.tsx` | Navigation-fresh auth shell; leaf pages still authorize independently |
 | `lib/payments/checkout.ts`, `lib/payments/money.ts` | Stripe hosted checkout via the platform proxy |
 | `lib/storage/upload.ts`, `lib/storage/upload-client.ts`, `app/actions/upload.ts` | S3 uploads via presigned tickets |
 | `lib/ai/client.ts` | AI streaming via the platform proxy (`app/api/chat/route.ts` MAY be edited) |
@@ -51,8 +52,10 @@ mapped Tailwind utilities (`bg-primary`, `text-muted-foreground`, …).
 - Email confirmation is DISABLED on the shared project: `signUp()` returns an
   active session immediately. **Never** build a "vérifiez votre e-mail" /
   magic-link / OTP flow, never set `emailRedirectTo`.
-- Server-side user read: always `getUser()` (never trust `getSession()` for
-  authorization). A protected page redirects to `/auth` when `!user`.
+- Server-side user read: use `getCurrentUser()` from `@/lib/supabase/auth`
+  (internally backed by `getUser()`, never `getSession()`). A protected page
+  redirects to `/auth` when it returns `null`; transient Supabase failures are
+  surfaced instead of being misreported as a logout.
 - `signIn`/`signUp` are `useActionState` reducers
   (`(prevState, formData) => Promise<AuthState>`); `signOut` is a no-arg action
   wired as `<form action={signOut}><button>Déconnexion</button></form>`.

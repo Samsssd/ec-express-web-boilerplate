@@ -8,7 +8,8 @@ and OpenCode edits the app live afterwards, guided by [AGENTS.md](AGENTS.md).
 Pre-wired (deterministic, no secrets in the app):
 
 - **Auth** — Supabase cookie SSR (`@supabase/ssr`): `lib/supabase/{client,server}.ts`,
-  `middleware.ts`, `/auth` page + `app/actions/auth.ts` (signIn/signUp/signOut).
+  preview-safe cookie options, `middleware.ts`, a navigation-fresh auth template,
+  `/auth` page + `app/actions/auth.ts` (signIn/signUp/signOut).
 - **Payments** — hosted Stripe Checkout through the platform proxy
   (`lib/payments/checkout.ts`); the app never holds a Stripe key.
 - **Storage** — S3 presigned-ticket uploads through the platform proxy
@@ -23,7 +24,8 @@ Pre-wired (deterministic, no secrets in the app):
 Runtime env (injected by the platform as `.env.local`):
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
 `NEXT_PUBLIC_APP_ID`, `PAYMENTS_API_URL/TOKEN`, `STORAGE_API_URL/TOKEN`,
-`AI_API_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`.
+`AI_API_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`. Embedded previews additionally receive
+`NEXT_PUBLIC_EMBEDDED_PREVIEW=true`; production deployments do not.
 
 ```bash
 npm install

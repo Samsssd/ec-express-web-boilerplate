@@ -16,6 +16,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error: string } | null;
@@ -25,12 +26,13 @@ const USERS_TABLE = `${process.env.NEXT_PUBLIC_APP_ID || "app"}_users`;
 /** Table-missing errors (migration not applied yet) — the only tolerated upsert failure. */
 const MISSING_TABLE_CODES = new Set(["42P01", "PGRST205", "PGRST204", "PGRST202"]);
 
-async function upsertProfile(fullName?: string): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+async function upsertProfile(
+  supabase: ServerClient,
+  user: User,
+  fullName?: string,
+): Promise<string | null> {
   const { error } = await supabase.from(USERS_TABLE).upsert(
     {
       id: user.id,
@@ -49,10 +51,11 @@ export async function signIn(prevState: AuthState, formData: FormData): Promise<
   if (!email || !password) return { error: "Renseignez votre e-mail et votre mot de passe." };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: error.message };
+  if (!data.user || !data.session) return { error: "La session n’a pas pu être créée." };
 
-  const profileError = await upsertProfile();
+  const profileError = await upsertProfile(supabase, data.user);
   if (profileError) return { error: profileError };
 
   revalidatePath("/", "layout");
@@ -75,12 +78,15 @@ export async function signUp(prevState: AuthState, formData: FormData): Promise<
 
   // Email confirmation is OFF, so a session is active now. Belt-and-suspenders:
   // if it is unexpectedly missing, sign in directly — never show an email step.
-  if (!data.session) {
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  let activeUser = data.user;
+  if (!data.session || !activeUser) {
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) return { error: signInError.message };
+    if (!signInData.user || !signInData.session) return { error: "La session n’a pas pu être créée." };
+    activeUser = signInData.user;
   }
 
-  const profileError = await upsertProfile(fullName || undefined);
+  const profileError = await upsertProfile(supabase, activeUser, fullName || undefined);
   if (profileError) return { error: profileError };
 
   revalidatePath("/", "layout");
@@ -89,6 +95,8 @@ export async function signUp(prevState: AuthState, formData: FormData): Promise<
 
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) throw new Error("La déconnexion a échoué. Veuillez réessayer.");
+  revalidatePath("/", "layout");
   redirect("/auth");
 }
