@@ -77,12 +77,17 @@ schema is managed through SQL files in `supabase/migrations/`:
 - **Idempotent DDL only**: `CREATE TABLE IF NOT EXISTS`,
   `CREATE INDEX IF NOT EXISTS`, `ALTER TABLE`, and `DROP POLICY IF EXISTS`
   before every `CREATE POLICY` (Postgres has no `CREATE POLICY IF NOT EXISTS`).
+- Keep each file below **64 KB and 40 SQL statements**.
 - **Every new table, in the same file**: `ENABLE ROW LEVEL SECURITY`,
   owner-scoped policies (`auth.uid()`), and
   `GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO anon, authenticated;`.
+- **Every web policy** must compare an owner column to `auth.uid()`; adding one
+  safe policy does not make a second permissive policy safe. `USING (true)` is
+  rejected for web apps.
 - **Forbidden** (rejected by the platform validator): functions, triggers,
   extensions, roles, `DROP TABLE`, `TRUNCATE`, `DO $$` blocks,
   `SECURITY DEFINER`, and touching other apps' tables or `auth.*`/`storage.*`.
+  The only `auth.*` exception is an FK `REFERENCES auth.users (id)`.
 - The reserved users profile table is `<appId>_users` (`id` = the auth user
   id). `app/actions/auth.ts` already upserts it on sign-in/sign-up — it just
   tolerates the table not existing yet. **Your first migration for any
