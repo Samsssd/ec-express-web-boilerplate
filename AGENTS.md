@@ -53,9 +53,11 @@ mapped Tailwind utilities (`bg-primary`, `text-muted-foreground`, …).
   active session immediately. **Never** build a "vérifiez votre e-mail" /
   magic-link / OTP flow, never set `emailRedirectTo`.
 - Server-side user read: use `getCurrentUser()` from `@/lib/supabase/auth`
-  (internally backed by `getUser()`, never `getSession()`). A protected page
-  redirects to `/auth` when it returns `null`; transient Supabase failures are
-  surfaced instead of being misreported as a logout.
+  (internally backed by `getUser()`, never `getSession()`). When a page/action
+  already created a Supabase client for queries, pass it as
+  `getCurrentUser(supabase)`. A protected page redirects to `/auth` when it
+  returns `null`; transient Supabase failures are surfaced instead of being
+  misreported as a logout.
 - `signIn`/`signUp` are `useActionState` reducers
   (`(prevState, formData) => Promise<AuthState>`); `signOut` is a no-arg action
   wired as `<form action={signOut}><button>Déconnexion</button></form>`.

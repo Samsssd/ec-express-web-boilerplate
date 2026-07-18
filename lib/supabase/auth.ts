@@ -1,6 +1,8 @@
 import type { AuthError, User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
 const SIGNED_OUT_ERROR_NAMES = new Set(["AuthSessionMissingError"]);
 const SIGNED_OUT_ERROR_CODES = new Set([
   "session_not_found",
@@ -23,8 +25,8 @@ function isSignedOutError(error: AuthError): boolean {
  * Returns null only for a confirmed missing/invalid session. A transient
  * Supabase failure is surfaced instead of being misreported as a logout.
  */
-export async function getCurrentUser(): Promise<User | null> {
-  const supabase = await createClient();
+export async function getCurrentUser(client?: ServerClient): Promise<User | null> {
+  const supabase = client || (await createClient());
   const { data, error } = await supabase.auth.getUser();
   if (!error) return data.user;
   if (isSignedOutError(error)) return null;
